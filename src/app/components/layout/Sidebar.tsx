@@ -1,3 +1,4 @@
+// src/components/layout/Sidebar.tsx
 import React from "react";
 import { 
   LayoutDashboard, MessageSquare, Bot, Database, FolderKanban, 
@@ -10,9 +11,16 @@ interface SidebarProps {
   onNavigate: (p: Page) => void;
   collapsed: boolean;
   onToggle: () => void;
+  onLogout?: () => void;
 }
 
-export const Sidebar = ({ activePage, onNavigate, collapsed, onToggle }: SidebarProps) => {
+export const Sidebar = ({ 
+  activePage, 
+  onNavigate, 
+  collapsed, 
+  onToggle,
+  onLogout
+}: SidebarProps) => {
   const MENU_ITEMS = [
     { id: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { id: "chat", icon: <MessageSquare size={18} />, label: "AI Chat" },
@@ -23,6 +31,14 @@ export const Sidebar = ({ activePage, onNavigate, collapsed, onToggle }: Sidebar
     { id: "analytics", icon: <BarChart2 size={18} />, label: "Analytics" },
     { id: "reports", icon: <FileText size={18} />, label: "Reports" },
   ];
+
+  {/* Logout handler */}  
+  const handleLogout = () => {
+    localStorage.removeItem("loggedIn");
+    if (onLogout) {
+      onLogout();
+    }
+  };
 
   return (
     <aside
@@ -65,7 +81,10 @@ export const Sidebar = ({ activePage, onNavigate, collapsed, onToggle }: Sidebar
           <Settings size={18} />
           {!collapsed && <span className="text-sm font-medium">Settings</span>}
         </button>
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all">
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sidebar-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all"
+        >
           <LogOut size={18} />
           {!collapsed && <span className="text-sm font-medium">Logout</span>}
         </button>

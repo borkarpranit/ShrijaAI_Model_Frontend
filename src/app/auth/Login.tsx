@@ -35,9 +35,7 @@ export default function Login({ onLogin }: LoginProps) {
                 <CardHeader className="text-center">
 
                     <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-primary flex items-center justify-center">
-
                         <Bot className="text-primary-foreground" />
-
                     </div>
 
                     <CardTitle className="text-3xl font-bold">
@@ -54,10 +52,10 @@ export default function Login({ onLogin }: LoginProps) {
 
                     <form onSubmit={handleSubmit} className="space-y-5">
 
-                        <div>
-                            <Label>Email</Label>
-
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
                             <Input
+                                id="email"
                                 type="email"
                                 placeholder="Enter your email"
                                 value={email}
@@ -65,19 +63,16 @@ export default function Login({ onLogin }: LoginProps) {
                             />
                         </div>
 
-                        <div>
-
-                            <Label>Password</Label>
-
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
                             <div className="relative">
-
                                 <Input
+                                    id="password"
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Enter your password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
-
                                 <button
                                     type="button"
                                     className="absolute right-3 top-2.5 text-muted-foreground"
@@ -85,9 +80,22 @@ export default function Login({ onLogin }: LoginProps) {
                                 >
                                     {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
                                 </button>
-
                             </div>
+                        </div>
 
+                        {/* Forgot password link */}
+                        <div className="text-right">
+                            <a 
+                                href="#" 
+                                className="text-sm text-primary hover:underline"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    // Add your forgot password logic here
+                                    alert("Forgot password functionality coming soon!");
+                                }}
+                            >
+                                Forgot password?
+                            </a>
                         </div>
 
                         <Button
@@ -96,6 +104,22 @@ export default function Login({ onLogin }: LoginProps) {
                         >
                             Sign In
                         </Button>
+
+                        {/* ADD SIGN UP LINK HERE */}
+                        <div className="text-center text-sm text-muted-foreground">
+                            Don't have an account?{" "}
+                            <a 
+                                href="#" 
+                                className="text-primary font-medium hover:underline"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    // Add your sign up logic here
+                                    alert("Sign up functionality coming soon!");
+                                }}
+                            >
+                                Sign up
+                            </a>
+                        </div>
 
                     </form>
 

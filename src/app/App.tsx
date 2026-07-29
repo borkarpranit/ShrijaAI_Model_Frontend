@@ -1,3 +1,4 @@
+// src/App.tsx
 import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Navbar } from "./components/layout/Navbar";
@@ -41,6 +42,15 @@ export default function App() {
     }, 1500);
   }, []);
 
+  {/* Add logout handler */}
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("loggedIn");
+    setIsLoggedIn(false);
+    setMessages([
+      { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
+    ]);
+  }, []);
+
   const renderPage = () => {
     switch (activePage) {
       case "dashboard":
@@ -80,6 +90,7 @@ export default function App() {
         onNavigate={setActivePage}
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onLogout={handleLogout}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
