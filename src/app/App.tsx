@@ -5,6 +5,7 @@ import { FilePreviewPanel } from "./components/layout/FilePreviewPanel";
 import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { MessageCard, ChatInput } from "./components/chat";
 import { Page, Message } from "./types";
+import Login from "./auth/Login";
 
 export default function App() {
   const [activePage, setActivePage] = useState<Page>("chat");
@@ -12,6 +13,9 @@ export default function App() {
   const [rightPanel, setRightPanel] = useState(false);
   const [splitScreen, setSplitScreen] = useState(false);
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "dark");
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("loggedIn") === "true"
+  );
 
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
@@ -61,19 +65,27 @@ export default function App() {
     }
   };
 
+  if (!isLoggedIn) {
+    return (
+      <Login
+        onLogin={() => setIsLoggedIn(true)}
+      />
+    );
+  }
+
   return (
     <div className={`flex h-screen overflow-hidden bg-background text-foreground ${theme === "dark" ? "dark" : ""}`}>
-      <Sidebar 
-        activePage={activePage} 
-        onNavigate={setActivePage} 
-        collapsed={sidebarCollapsed} 
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)} 
+      <Sidebar
+        activePage={activePage}
+        onNavigate={setActivePage}
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
-        <Navbar 
+        <Navbar
           activePage={activePage}
-          onCommandPalette={() => {}}
+          onCommandPalette={() => { }}
           onNavigate={setActivePage}
           rightPanel={rightPanel}
           onRightPanel={() => setRightPanel(!rightPanel)}
