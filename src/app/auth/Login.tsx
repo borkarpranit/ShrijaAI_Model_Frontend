@@ -9,9 +9,10 @@ import { useState } from "react";
 interface LoginProps {
     onLogin: () => void;
     onSignUpClick?: () => void;
+    onForgotPasswordClick?: () => void;
 }
 
-export default function Login({ onLogin, onSignUpClick }: LoginProps) {
+export default function Login({ onLogin, onSignUpClick, onForgotPasswordClick }: LoginProps) {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -92,7 +93,7 @@ export default function Login({ onLogin, onSignUpClick }: LoginProps) {
                                 className="text-sm text-primary hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    alert("Forgot password functionality coming soon!");
+                                    if (onForgotPasswordClick) onForgotPasswordClick();
                                 }}
                             >
                                 Forgot password?

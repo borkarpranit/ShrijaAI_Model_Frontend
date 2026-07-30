@@ -8,6 +8,8 @@ import { MessageCard, ChatInput } from "./components/chat";
 import { Page, Message } from "./types";
 import Login from "./auth/Login";
 import SignUp from "./auth/SignUp";
+import ForgotPassword from "./auth/ForgotPassword";
+import ResetPassword from "./auth/ResetPassword";
 
 export default function App() {
   const [activePage, setActivePage] = useState<Page>("chat");
@@ -19,6 +21,8 @@ export default function App() {
     localStorage.getItem("loggedIn") === "true"
   );
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
@@ -53,13 +57,23 @@ export default function App() {
   }, []);
 
   const handleSignUp = () => {
-    // After successful sign up
     setIsLoggedIn(true);
     setShowSignUp(false);
   };
 
   const handleBackToLogin = () => {
     setShowSignUp(false);
+    setShowForgotPassword(false);
+    setShowResetPassword(false);
+  };
+
+  const handleForgotPassword = () => {
+    setShowForgotPassword(true);
+  };
+
+  const handleResetPassword = () => {
+    setShowResetPassword(true);
+    setShowForgotPassword(false);
   };
 
   const renderPage = () => {
@@ -86,15 +100,21 @@ export default function App() {
     }
   };
 
-  // Show Login or SignUp if not logged in
   if (!isLoggedIn) {
     if (showSignUp) {
       return <SignUp onSignUp={handleSignUp} onBackToLogin={handleBackToLogin} />;
+    }
+    if (showForgotPassword) {
+      return <ForgotPassword onBackToLogin={handleBackToLogin} />;
+    }
+    if (showResetPassword) {
+      return <ResetPassword onBackToLogin={handleBackToLogin} />;
     }
     return (
       <Login
         onLogin={() => setIsLoggedIn(true)}
         onSignUpClick={() => setShowSignUp(true)}
+        onForgotPasswordClick={handleForgotPassword}
       />
     );
   }
