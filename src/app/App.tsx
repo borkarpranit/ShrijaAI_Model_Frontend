@@ -7,6 +7,7 @@ import { DashboardPage } from "./components/dashboard/DashboardPage";
 import { MessageCard, ChatInput } from "./components/chat";
 import { Page, Message } from "./types";
 import Login from "./auth/Login";
+import SignUp from "./auth/SignUp";
 
 export default function App() {
   const [activePage, setActivePage] = useState<Page>("chat");
@@ -17,6 +18,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem("loggedIn") === "true"
   );
+  const [showSignUp, setShowSignUp] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
     { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
@@ -42,7 +44,6 @@ export default function App() {
     }, 1500);
   }, []);
 
-  {/* Add logout handler */}
   const handleLogout = useCallback(() => {
     localStorage.removeItem("loggedIn");
     setIsLoggedIn(false);
@@ -50,6 +51,16 @@ export default function App() {
       { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
     ]);
   }, []);
+
+  const handleSignUp = () => {
+    // After successful sign up
+    setIsLoggedIn(true);
+    setShowSignUp(false);
+  };
+
+  const handleBackToLogin = () => {
+    setShowSignUp(false);
+  };
 
   const renderPage = () => {
     switch (activePage) {
@@ -75,10 +86,15 @@ export default function App() {
     }
   };
 
+  // Show Login or SignUp if not logged in
   if (!isLoggedIn) {
+    if (showSignUp) {
+      return <SignUp onSignUp={handleSignUp} onBackToLogin={handleBackToLogin} />;
+    }
     return (
       <Login
         onLogin={() => setIsLoggedIn(true)}
+        onSignUpClick={() => setShowSignUp(true)}
       />
     );
   }

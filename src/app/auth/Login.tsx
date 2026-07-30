@@ -1,3 +1,4 @@
+// src/auth/Login.tsx
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -7,9 +8,10 @@ import { useState } from "react";
 
 interface LoginProps {
     onLogin: () => void;
+    onSignUpClick?: () => void;
 }
 
-export default function Login({ onLogin }: LoginProps) {
+export default function Login({ onLogin, onSignUpClick }: LoginProps) {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -90,7 +92,6 @@ export default function Login({ onLogin }: LoginProps) {
                                 className="text-sm text-primary hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    // Add your forgot password logic here
                                     alert("Forgot password functionality coming soon!");
                                 }}
                             >
@@ -105,7 +106,7 @@ export default function Login({ onLogin }: LoginProps) {
                             Sign In
                         </Button>
 
-                        {/* ADD SIGN UP LINK HERE */}
+                        {/* Sign Up Link */}
                         <div className="text-center text-sm text-muted-foreground">
                             Don't have an account?{" "}
                             <a 
@@ -113,8 +114,7 @@ export default function Login({ onLogin }: LoginProps) {
                                 className="text-primary font-medium hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    // Add your sign up logic here
-                                    alert("Sign up functionality coming soon!");
+                                    if (onSignUpClick) onSignUpClick();
                                 }}
                             >
                                 Sign up
