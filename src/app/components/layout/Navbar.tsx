@@ -93,12 +93,6 @@ export const Navbar = ({
           <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-foreground" />
         </button>
 
-        <button
-          onClick={() => onNavigate("profile")}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-background bg-foreground"
-        >
-          YA
-        </button>
       </div>
     </header>
   );
