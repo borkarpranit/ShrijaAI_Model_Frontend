@@ -5,6 +5,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Eye, EyeOff, Bot } from "lucide-react";
 import { useState } from "react";
+import { login } from "../lib/api";
 
 interface LoginProps {
     onLogin: () => void;
@@ -17,16 +18,37 @@ export default function Login({ onLogin, onSignUpClick, onForgotPasswordClick }:
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState("");
+    const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError("");
+        setSubmitting(true);
 
-        // Temporary login
-        if (email === "admin@shrija.com" && password === "admin1234") {
+        try {
+            // NOTE: backend authenticates by "username" (e.g. "prachi", "hradmin"),
+            // not email. Sending the email field's value as the username for now —
+            // swap this for a real username field, or add email-based lookup on
+            // the backend, once that's decided.
+            const result = await login(email, password);
+
             localStorage.setItem("loggedIn", "true");
+            localStorage.setItem("authToken", result.token);
+            localStorage.setItem(
+                "authUser",
+                JSON.stringify({
+                    userId: result.userId,
+                    username: result.username,
+                    role: result.role,
+                })
+            );
+
             onLogin();
-        } else {
-            alert("Invalid email or password");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Invalid email or password");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -100,11 +122,16 @@ export default function Login({ onLogin, onSignUpClick, onForgotPasswordClick }:
                             </a>
                         </div>
 
+                        {error && (
+                            <p className="text-sm text-red-500 text-center">{error}</p>
+                        )}
+
                         <Button
                             type="submit"
                             className="w-full"
+                            disabled={submitting}
                         >
-                            Sign In
+                            {submitting ? "Signing in..." : "Sign In"}
                         </Button>
 
                         {/* Sign Up Link */}

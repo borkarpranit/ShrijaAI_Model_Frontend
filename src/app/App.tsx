@@ -20,6 +20,10 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem("loggedIn") === "true"
   );
+  const [authUser, setAuthUser] = useState(() => {
+    const saved = localStorage.getItem("authUser");
+    return saved ? JSON.parse(saved) as { userId: number; username: string; role: string } : null;
+  });
   const [showSignUp, setShowSignUp] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -50,7 +54,10 @@ export default function App() {
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem("loggedIn");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
     setIsLoggedIn(false);
+    setAuthUser(null);
     setMessages([
       { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
     ]);
@@ -112,7 +119,11 @@ export default function App() {
     }
     return (
       <Login
-        onLogin={() => setIsLoggedIn(true)}
+        onLogin={() => {
+          const saved = localStorage.getItem("authUser");
+          if (saved) setAuthUser(JSON.parse(saved));
+          setIsLoggedIn(true);
+        }}
         onSignUpClick={() => setShowSignUp(true)}
         onForgotPasswordClick={handleForgotPassword}
       />
@@ -127,6 +138,11 @@ export default function App() {
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         onLogout={handleLogout}
+        userData={
+          authUser
+            ? { name: authUser.username, email: authUser.username, plan: authUser.role }
+            : undefined
+        }
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
