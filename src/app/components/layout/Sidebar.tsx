@@ -4,9 +4,10 @@ import {
   LayoutDashboard, MessageSquare, Bot, Database, FolderKanban, 
   CheckSquare, BarChart2, FileText, Settings, LogOut, ChevronLeft, 
   ChevronRight, Zap, User, HelpCircle, Sparkles, Crown, UserCircle,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, UserPlus
 } from "lucide-react";
 import { Page } from "../../types";
+import { canCreateUsers, Role } from "../../lib/api";
 
 interface SidebarProps {
   activePage: Page;
@@ -14,6 +15,7 @@ interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   onLogout?: () => void;
+  userRole?: Role;
   userData?: {
     name: string;
     email: string;
@@ -27,6 +29,7 @@ export const Sidebar = ({
   collapsed, 
   onToggle,
   onLogout,
+  userRole,
   userData = { name: "Admin", email: "admin@shrija.com", plan: "Free" }
 }: SidebarProps) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -40,6 +43,9 @@ export const Sidebar = ({
     { id: "tasks", icon: <CheckSquare size={18} />, label: "Tasks" },
     { id: "analytics", icon: <BarChart2 size={18} />, label: "Analytics" },
     { id: "reports", icon: <FileText size={18} />, label: "Reports" },
+    ...(canCreateUsers(userRole)
+      ? [{ id: "users", icon: <UserPlus size={18} />, label: "Create User" }]
+      : []),
   ];
 
   const handleLogout = () => {

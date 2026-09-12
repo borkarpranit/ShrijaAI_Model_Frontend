@@ -5,15 +5,14 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Eye, EyeOff, Bot } from "lucide-react";
 import { useState } from "react";
-import { login } from "../lib/api";
+import { login, saveSession, ApiError } from "../lib/api";
 
 interface LoginProps {
     onLogin: () => void;
-    onSignUpClick?: () => void;
     onForgotPasswordClick?: () => void;
 }
 
-export default function Login({ onLogin, onSignUpClick, onForgotPasswordClick }: LoginProps) {
+export default function Login({ onLogin, onForgotPasswordClick }: LoginProps) {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -27,26 +26,27 @@ export default function Login({ onLogin, onSignUpClick, onForgotPasswordClick }:
         setSubmitting(true);
 
         try {
-            // NOTE: backend authenticates by "username" (e.g. "prachi", "hradmin"),
-            // not email. Sending the email field's value as the username for now —
-            // swap this for a real username field, or add email-based lookup on
-            // the backend, once that's decided.
-            const result = await login(email, password);
+            // The backend authenticates by "username" (an email address, e.g.
+            // "admin@gmail.com") -- the email field here is sent as-is.
+            const result = await login(email.trim(), password);
 
-            localStorage.setItem("loggedIn", "true");
-            localStorage.setItem("authToken", result.token);
-            localStorage.setItem(
-                "authUser",
-                JSON.stringify({
+            saveSession(
+                {
                     userId: result.userId,
                     username: result.username,
                     role: result.role,
-                })
+                    employeeId: result.employeeId,
+                },
+                result.token
             );
 
             onLogin();
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Invalid email or password");
+            if (err instanceof ApiError) {
+                setError(err.message);
+            } else {
+                setError("Can't reach the server. Is auth-service running on :8081?");
+            }
         } finally {
             setSubmitting(false);
         }
@@ -134,20 +134,11 @@ export default function Login({ onLogin, onSignUpClick, onForgotPasswordClick }:
                             {submitting ? "Signing in..." : "Sign In"}
                         </Button>
 
-                        {/* Sign Up Link */}
-                        <div className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{" "}
-                            <a 
-                                href="#" 
-                                className="text-primary font-medium hover:underline"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    if (onSignUpClick) onSignUpClick();
-                                }}
-                            >
-                                Sign up
-                            </a>
-                        </div>
+                        {/* Accounts are provisioned by an Admin/HR/Manager, not
+                            self-registered -- see auth-service AuthService.CREATABLE_ROLES */}
+                        <p className="text-center text-sm text-muted-foreground">
+                            Don't have an account? Contact your administrator.
+                        </p>
 
                     </form>
 

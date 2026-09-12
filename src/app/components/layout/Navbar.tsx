@@ -29,7 +29,7 @@ export const Navbar = ({
     dashboard: "Dashboard", chat: "AI Chat", agents: "AI Agents",
     knowledge: "Knowledge Base", projects: "Projects", tasks: "Tasks",
     analytics: "Analytics", reports: "Reports", notifications: "Notifications",
-    settings: "Settings", profile: "Profile",
+    settings: "Settings", profile: "Profile", users: "Create User",
   };
 
   return (

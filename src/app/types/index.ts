@@ -1,4 +1,4 @@
-export type Page = "dashboard" | "chat" | "agents" | "knowledge" | "projects" | "tasks" | "analytics" | "reports" | "notifications" | "settings" | "profile";
+export type Page = "dashboard" | "chat" | "agents" | "knowledge" | "projects" | "tasks" | "analytics" | "reports" | "notifications" | "settings" | "profile" | "users";
 
 export interface Message {
   id: string;

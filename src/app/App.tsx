@@ -10,6 +10,14 @@ import Login from "./auth/Login";
 import SignUp from "./auth/SignUp";
 import ForgotPassword from "./auth/ForgotPassword";
 import ResetPassword from "./auth/ResetPassword";
+import {
+  AuthUser,
+  getStoredUser,
+  getToken,
+  clearSession,
+  sendChatMessage,
+  ApiError,
+} from "./lib/api";
 
 export default function App() {
   const [activePage, setActivePage] = useState<Page>("chat");
@@ -20,11 +28,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     localStorage.getItem("loggedIn") === "true"
   );
-  const [authUser, setAuthUser] = useState(() => {
-    const saved = localStorage.getItem("authUser");
-    return saved ? JSON.parse(saved) as { userId: number; username: string; role: string } : null;
-  });
-  const [showSignUp, setShowSignUp] = useState(false);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() => getStoredUser());
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
 
@@ -32,6 +36,9 @@ export default function App() {
     { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [chatSessionId, setChatSessionId] = useState<string | null>(
+    () => localStorage.getItem("chatSessionId")
+  );
 
   useEffect(() => {
     const root = document.documentElement;
@@ -40,36 +47,63 @@ export default function App() {
     localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const handleSendMessage = useCallback((content: string) => {
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content, timestamp: new Date() };
-    setMessages(prev => [...prev, userMsg]);
-    setIsTyping(true);
-
-    setTimeout(() => {
-      const aiMsg: Message = { id: (Date.now() + 1).toString(), role: "assistant", content: "I've received your message and I'm processing it.", timestamp: new Date() };
-      setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 1500);
-  }, []);
-
   const handleLogout = useCallback(() => {
-    localStorage.removeItem("loggedIn");
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("authUser");
+    clearSession();
     setIsLoggedIn(false);
     setAuthUser(null);
+    setChatSessionId(null);
     setMessages([
       { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
     ]);
   }, []);
 
-  const handleSignUp = () => {
-    setIsLoggedIn(true);
-    setShowSignUp(false);
-  };
+  const handleSendMessage = useCallback(async (content: string) => {
+    const token = getToken();
+    if (!token) {
+      handleLogout();
+      return;
+    }
+
+    const userMsg: Message = { id: Date.now().toString(), role: "user", content, timestamp: new Date() };
+    setMessages(prev => [...prev, userMsg]);
+    setIsTyping(true);
+
+    try {
+      const result = await sendChatMessage(token, content, chatSessionId);
+
+      if (result.sessionId && result.sessionId !== chatSessionId) {
+        setChatSessionId(result.sessionId);
+        localStorage.setItem("chatSessionId", result.sessionId);
+      }
+
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: result.responseText,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, aiMsg]);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        handleLogout();
+        return;
+      }
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          err instanceof ApiError
+            ? `Sorry, something went wrong: ${err.message}`
+            : "Sorry, I can't reach the AI service right now. Is orchestrator-agent running on :8080?",
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsTyping(false);
+    }
+  }, [chatSessionId, handleLogout]);
 
   const handleBackToLogin = () => {
-    setShowSignUp(false);
     setShowForgotPassword(false);
     setShowResetPassword(false);
   };
@@ -97,6 +131,15 @@ export default function App() {
             <ChatInput onSend={handleSendMessage} disabled={isTyping} />
           </div>
         );
+      case "users":
+        return authUser ? (
+          <SignUp
+            token={getToken() || ""}
+            creatorRole={authUser.role}
+            onCreated={() => { /* stay on the form so more accounts can be added */ }}
+            onCancel={() => setActivePage("chat")}
+          />
+        ) : null;
       default:
         return (
           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-background">
@@ -108,9 +151,6 @@ export default function App() {
   };
 
   if (!isLoggedIn) {
-    if (showSignUp) {
-      return <SignUp onSignUp={handleSignUp} onBackToLogin={handleBackToLogin} />;
-    }
     if (showForgotPassword) {
       return <ForgotPassword onBackToLogin={handleBackToLogin} />;
     }
@@ -120,11 +160,9 @@ export default function App() {
     return (
       <Login
         onLogin={() => {
-          const saved = localStorage.getItem("authUser");
-          if (saved) setAuthUser(JSON.parse(saved));
+          setAuthUser(getStoredUser());
           setIsLoggedIn(true);
         }}
-        onSignUpClick={() => setShowSignUp(true)}
         onForgotPasswordClick={handleForgotPassword}
       />
     );
@@ -138,6 +176,7 @@ export default function App() {
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         onLogout={handleLogout}
+        userRole={authUser?.role}
         userData={
           authUser
             ? { name: authUser.username, email: authUser.username, plan: authUser.role }
