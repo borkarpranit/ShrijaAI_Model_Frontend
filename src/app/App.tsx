@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Sidebar } from "./components/layout/Sidebar";
 import { Navbar } from "./components/layout/Navbar";
 import { FilePreviewPanel } from "./components/layout/FilePreviewPanel";
@@ -33,9 +33,26 @@ export default function App() {
   const [showResetPassword, setShowResetPassword] = useState(false);
 
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", role: "assistant", content: "Hello! I'm Shrija AI. How can I help you today?", timestamp: new Date() }
+    {
+      id: "1",
+      role: "assistant",
+      content: "Hello! I'm Shrija AI. How can I help you today?",
+      timestamp: new Date()
+    }
   ]);
+
   const [isTyping, setIsTyping] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    });
+  }, [messages, isTyping]);
   const [chatSessionId, setChatSessionId] = useState<string | null>(
     () => localStorage.getItem("chatSessionId")
   );
@@ -124,9 +141,25 @@ export default function App() {
       case "chat":
         return (
           <div className="flex-1 flex flex-col min-w-0 bg-background">
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {messages.map(m => <MessageCard key={m.id} msg={m} />)}
-              {isTyping && <MessageCard msg={{ id: "thinking", role: "assistant", content: "", timestamp: new Date(), thinking: true }} />}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
+              {messages.map(m => (
+                <MessageCard key={m.id} msg={m} />
+              ))}
+
+              {isTyping && (
+                <MessageCard
+                  msg={{
+                    id: "thinking",
+                    role: "assistant",
+                    content: "",
+                    timestamp: new Date(),
+                    thinking: true,
+                  }}
+                />
+              )}
+
+              {/* Scroll target */}
+              <div ref={messagesEndRef} />
             </div>
             <ChatInput onSend={handleSendMessage} disabled={isTyping} />
           </div>
